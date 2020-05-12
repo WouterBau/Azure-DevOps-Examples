@@ -16,22 +16,20 @@ import static org.mockito.Mockito.*;
 /**
  * Unit test for Function class.
  */
-public class FunctionTest {
+public class WeatherForecastTest {
     /**
      * Unit test for HttpTriggerJava method.
      */
     @Test
-    public void testHttpTriggerJava() throws Exception {
+    public void testWithLocation() throws Exception {
         // Setup
         @SuppressWarnings("unchecked")
         final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
 
+        final String location = "Lummen";
         final Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("name", "Azure");
+        queryParams.put("location", location);
         doReturn(queryParams).when(req).getQueryParameters();
-
-        final Optional<String> queryBody = Optional.empty();
-        doReturn(queryBody).when(req).getBody();
 
         doAnswer(new Answer<HttpResponseMessage.Builder>() {
             @Override
@@ -48,6 +46,32 @@ public class FunctionTest {
         final HttpResponseMessage ret = new Function().run(req, context);
 
         // Verify
-        assertEquals(ret.getStatus(), HttpStatus.OK);
+        assertEquals(HttpStatus.OK, ret.getStatus());
+        assertEquals("It's always sunny in " + location, (String)ret.getBody());
+    }
+    
+    @Test
+    public void testWithoutLocation() throws Exception {
+        // Setup
+        @SuppressWarnings("unchecked")
+        final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
+
+        doAnswer(new Answer<HttpResponseMessage.Builder>() {
+            @Override
+            public HttpResponseMessage.Builder answer(InvocationOnMock invocation) {
+                HttpStatus status = (HttpStatus) invocation.getArguments()[0];
+                return new HttpResponseMessageMock.HttpResponseMessageBuilderMock().status(status);
+            }
+        }).when(req).createResponseBuilder(any(HttpStatus.class));
+
+        final ExecutionContext context = mock(ExecutionContext.class);
+        doReturn(Logger.getGlobal()).when(context).getLogger();
+
+        // Invoke
+        final HttpResponseMessage ret = new Function().run(req, context);
+
+        // Verify
+        assertEquals(HttpStatus.BAD_REQUEST, ret.getStatus());
+        assertEquals("Please pass a location in the query string", (String)ret.getBody());
     }
 }

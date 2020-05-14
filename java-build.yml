@@ -25,7 +25,7 @@ steps:
   displayName: 'Copy Files to artifact staging directory'
   inputs:
     SourceFolder: '$(System.DefaultWorkingDirectory)'
-    Contents: '**'
+    Contents: './Java/target/azure-functions/*/**'
     TargetFolder: $(Build.ArtifactStagingDirectory)
 
 - upload: $(Build.ArtifactStagingDirectory)

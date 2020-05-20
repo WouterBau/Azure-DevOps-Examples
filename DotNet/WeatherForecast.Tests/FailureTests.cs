@@ -7,7 +7,7 @@ namespace WeatherForecast.Tests
         [Fact]
         public void Failure()
         {
-            Assert.True(true);
+            Assert.True(false);
         }
     }
 }
